@@ -104,6 +104,18 @@ Useful scripts:
 
 All tests run against the mocked responses in `src/mocks/`, so no API keys are needed to run them.
 
+## Deployment
+
+`main` deploys to Vercel through GitHub Actions (`.github/workflows/deploy.yml`) once CI passes on it. Vercel's own Git deployments are turned off in `vercel.json` so each commit deploys once.
+
+One-time setup:
+
+1. Create a Vercel project for this repo (`npx vercel link` locally, or import it in the Vercel dashboard).
+2. Copy `orgId` and `projectId` from `.vercel/project.json` (created by `vercel link`).
+3. Create a token at https://vercel.com/account/tokens.
+4. In GitHub, go to Settings > Secrets and variables > Actions and add `VERCEL_TOKEN`, `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`.
+5. Add runtime environment variables (from `.env.example`) in the Vercel project settings as features need them.
+
 ## Contributing
 
 - `main` is production; `development` is the integration branch.
