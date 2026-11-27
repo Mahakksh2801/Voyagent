@@ -50,21 +50,23 @@ model User {
 }
 
 model Trip {
-  id           String     @id @default(cuid())
-  userId       String     @map("user_id")
-  title        String
+  id                     String     @id @default(cuid())
+  userId                 String     @map("user_id")
+  title                  String
   /// Ordered list of destinations, e.g. ["Lisbon", "Porto"]
-  destinations String[]
-  startDate    DateTime   @map("start_date") @db.Date
-  endDate      DateTime   @map("end_date") @db.Date
-  budgetTotal  Decimal    @map("budget_total") @db.Decimal(12, 2)
+  destinations           String[]
+  /// { country, state, vibe } when Voyagent picked the destination; validated by DestinationPreferencesSchema
+  destinationPreferences Json?      @map("destination_preferences")
+  startDate              DateTime   @map("start_date") @db.Date
+  endDate                DateTime   @map("end_date") @db.Date
+  budgetTotal            Decimal    @map("budget_total") @db.Decimal(12, 2)
   /// ISO 4217 code
-  currency     String     @db.Char(3)
-  status       TripStatus @default(DRAFT)
+  currency               String     @db.Char(3)
+  status                 TripStatus @default(DRAFT)
   /// Token for the public read-only share link; null when not shared
-  shareToken   String?    @unique @map("share_token")
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
+  shareToken             String?    @unique @map("share_token")
+  createdAt              DateTime   @default(now()) @map("created_at")
+  updatedAt              DateTime   @updatedAt @map("updated_at")
 
   user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   days     Day[]

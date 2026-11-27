@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CurrencySchema, IsoDateSchema } from "./common";
+import { DestinationPreferencesSchema } from "./destination";
 import { UserPreferencesSchema } from "./preferences";
 import { daysBetweenInclusive } from "@/lib/dates";
 
@@ -8,14 +9,17 @@ export const MAX_TRIP_DAYS = 30;
 
 /**
  * Input to itinerary generation (step 1 of the generation flow).
- * Destination, dates, budget and currency are required.
+ * Dates, budget and currency are required. The traveller either names
+ * destinations or gives destination preferences (vibe, and optionally a
+ * country and state) so Voyagent can pick destinations for them.
  */
 export const TripRequestSchema = z
   .object({
     destinations: z
       .array(z.string().trim().min(1, "Destination cannot be empty").max(120))
-      .min(1, "At least one destination is required")
-      .max(10),
+      .max(10)
+      .default([]),
+    destinationPreferences: DestinationPreferencesSchema.optional(),
     startDate: IsoDateSchema,
     endDate: IsoDateSchema,
     budgetTotal: z.number().finite().positive("Budget must be greater than 0"),
@@ -23,6 +27,13 @@ export const TripRequestSchema = z
     preferences: UserPreferencesSchema.optional(),
   })
   .superRefine((req, ctx) => {
+    if (req.destinations.length === 0 && !req.destinationPreferences) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["destinations"],
+        message: "Enter a destination, or pick a trip vibe so Voyagent can suggest one",
+      });
+    }
     if (req.endDate < req.startDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,

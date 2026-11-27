@@ -6,6 +6,7 @@ AI-powered travel planner that turns a destination, dates and a budget into a co
 
 ## What it will do
 
+- Pick destinations for you: choose a vibe (beach parties and chill, mountain trekking, or both) and optionally a country and state, and Voyagent suggests the best places for your dates.
 - Generate a day-by-day itinerary (sights, meals, transit) for one or more destinations, within budget.
 - Track estimated spend per day and per category, warn when a plan goes over budget, and suggest cheaper alternatives.
 - Pull the forecast for the trip dates, keep outdoor activities on clear days, and offer indoor backups for rain.
@@ -35,6 +36,7 @@ src/app/                      Next.js App Router (placeholder page for now)
 src/lib/schemas/              Zod schemas: trip request, itinerary (model output), places, weather, preferences, feedback
 src/lib/validation/           Itinerary validation and model-response parsing
 src/lib/generation/           Generate -> validate -> retry-once loop (generator is injected)
+src/lib/destinations/         Curated destination catalog, ranking by vibe and season, and checks on the model's picks
 src/lib/budget/               Budget totals per day and category
 src/lib/weather/              Clear / wet / unknown day classification
 src/lib/adapters/             Normalizers for OpenAI, Google Places and OpenWeatherMap responses
@@ -57,6 +59,24 @@ Every generated itinerary is checked before it is saved. Errors fail validation 
 | Total estimated cost is within budget | `OVER_BUDGET` | error |
 
 Lodging is exempt from the day window and may have no place ID, since booking is out of scope.
+
+## Destination suggestions
+
+Travellers can name destinations, or leave them to Voyagent by giving destination preferences:
+
+| Preference | Required | Values |
+| --- | --- | --- |
+| Vibe | yes | `beach` (beach parties and chill), `mountains` (mountain trekking), `both` |
+| Country | no | ISO country code, e.g. `IN` |
+| State | no, and only with a country | e.g. `Goa` |
+
+What happens for each combination:
+
+- **Country and state given:** that place is the destination.
+- **Country only:** Voyagent ranks that country's states for the vibe and travel dates.
+- **Neither:** Voyagent ranks destinations worldwide, at most two per country.
+
+Candidates come from a curated catalog (`src/lib/destinations/catalog.ts`), with each entry tagged by vibe and best months. Vibe fit ranks first, then how much of the trip falls in season. The AI then picks and explains the best few from that shortlist, and any pick outside it is rejected. If the AI is unavailable, the top-ranked candidates are shown instead.
 
 ## Local development
 
