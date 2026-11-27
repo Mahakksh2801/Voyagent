@@ -14,6 +14,9 @@ jobs:
   check:
     name: Lint, typecheck, test, build
     runs-on: ubuntu-latest
+    env:
+      # Placeholder so Prisma can validate and generate; no database is used in CI yet.
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/voyagent
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,6 +24,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run db:validate
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
